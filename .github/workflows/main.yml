@@ -1,0 +1,57 @@
+import pandas as pd
+import folium
+import requests
+import json
+
+# Fetch GeoJSON data for African countries
+africa_geo_response = requests.get(
+    "https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson"
+)
+africa_geo = africa_geo_response.json()
+
+# Creating a DataFrame with malaria severity levels for each country
+countries = [
+    "Algeria", "Angola", "Benin", "Botswana", "Burkina Faso", "Burundi", "Cameroon", "Chad",
+    "Democratic Republic of the Congo", "Djibouti", "Egypt", "Equatorial Guinea", "Ethiopia", "Gabon", "Ghana", "Guinea", "Guinea-Bissau", "Kenya",
+    "Lesotho", "Liberia", "Libya", "Madagascar", "Malawi", "Mali", "Mauritania", "Morocco", "Mozambique",
+    "Namibia", "Niger", "Nigeria", "Rwanda", "Senegal", "Sierra Leone", "Somalia", "South Africa",
+    "South Sudan", "Sudan", "Tanzania", "Togo", "Uganda", "Zambia", "Zimbabwe"
+]
+
+# Create specific malaria severity data for each country
+severity_levels = [
+    45, 67, 72, 15, 88, 94, 63, 58,
+    80, 33, 12, 50, 77, 50, 68, 85, 52, 61,
+    25, 73, 40, 55, 70, 30, 10, 82,
+    20, 60, 95, 47, 53, 66, 35, 22,
+    75, 65, 85, 78, 49, 88, 59, 62
+]
+
+# Create DataFrame for malaria severity
+data = {
+    "Country": countries,
+    "Severity Level": severity_levels
+}
+malaria_severity_data = pd.DataFrame(data)
+
+# Create a Folium map centered on Africa
+africa_map = folium.Map(location=[0, 20], zoom_start=3)
+
+# Add choropleth layer with malaria severity data
+folium.Choropleth(
+    geo_data=africa_geo,
+    name="choropleth",
+    data=malaria_severity_data,
+    columns=["Country", "Severity Level"],
+    key_on="feature.properties.ADMIN",
+    fill_color="YlOrRd",
+    fill_opacity=0.7,
+    line_opacity=0.2,
+    legend_name="Malaria Severity Level",
+).add_to(africa_map)
+
+# Add layer control to the map
+folium.LayerControl().add_to(africa_map)
+
+# Save the map to an HTML file
+africa_map.save("africa_malaria_severity_map.html")
